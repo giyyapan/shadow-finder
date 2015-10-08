@@ -188,8 +188,6 @@ class ShadowFinderView extends SelectListView
     else
       @setError(@getEmptyMessage(@items.length, filteredItems.length))
 
-
-
   confirmSelection: ->
     item = @getSelectedItem()
     @confirmed(item, searchAllPanes: atom.config.get('shadow-finder.searchAllPanes'))

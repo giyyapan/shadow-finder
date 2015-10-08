@@ -1,9 +1,9 @@
 {
-  "name": "fuzzy-finder",
-  "version": "0.90.0",
+  "name": "shadow-finder",
+  "version": "0.00.1",
   "main": "./lib/main",
-  "description": "Open an editor to a file in the project with `cmd-t`.",
-  "repository": "https://github.com/atom/fuzzy-finder",
+  "description": "A super finder to find files, symbols, tabs and more",
+  "repository": "https://github.com/giyyapan/shadow-finder",
   "license": "MIT",
   "dependencies": {
     "async": "0.2.6",
