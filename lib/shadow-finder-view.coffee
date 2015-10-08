@@ -1,15 +1,28 @@
-BaseFinderView = require './fuzzy-finder-view'
-ProjectFinder = require './project-finder'
+FuzzyFinderView = require './fuzzy-finder-view'
+FileFinder = require './file-finder'
 BufferFinder = require './buffer-finder'
-SymbolFinder = require './buffer-finder'
+SymbolFinder = require './symbol-finder'
 
 module.exports =
 class ShadowFinderView extends FuzzyFinderView
   initialize: (@paths) ->
     super
-    @projectFinder = new ProjectFinder
-    @bufferFinder = new BufferFinder
-    @symbolFinder = new SymbolFinder
+    @fileFinder = new FileFinder this
+    @bufferFinder = new BufferFinder this
+    @symbolFinder = new SymbolFinder this
+    @finders = [ @fileFinder, @bufferFinder, @symbolFinder ]
+    @currentFinder = @fileFinder
+
+  updateFinder:()->
+    filterQuery = @getFilterQuery()
+    finder = null
+    switch filterQuery[0]
+      when '@' then finder = @bufferFinder
+      when '#' then finder = @symbolFinder
+      else finder = @fileFinder
+    if finder isnt @currentFinder
+      @currentFinder = finder
+      @populate()
 
   toggle: ->
     if @panel?.isVisible()
@@ -18,19 +31,18 @@ class ShadowFinderView extends FuzzyFinderView
       @populate()
       @show() if @paths?.length > 0
 
-  getEmptyMessage: (itemCount) ->
-    if itemCount is 0
-      'No open editors'
+  projectRelativePathsForFilePaths:->
+    if @currentFinder.projectRelativePathsForFilePaths
+      @currentFinder.projectRelativePathsForFilePaths
     else
       super
 
+  getEmptyMessage: (itemCount) ->
+    @currentFinder.getEmptyMessage()
+
   populate: ->
-    editors = atom.workspace.getTextEditors().filter (editor) -> editor.getPath()?
-    activeEditor = atom.workspace.getActiveTextEditor()
-    editors = _.sortBy editors, (editor) ->
-      if editor is activeEditor
-        0
-      else
-        -(editor.lastOpened or 1)
-    @paths = editors.map (editor) -> editor.getPath()
-    @setItems(_.uniq(@paths))
+    @updateFinder()
+    @currentFinder.populate()
+
+  destroy:->
+    finder.destroy() for finder in @finders

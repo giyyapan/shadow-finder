@@ -6,17 +6,14 @@ BaseFinder = require './base-finder'
 PathLoader = require './path-loader'
 
 module.exports =
-class ProjectFinder extends BaseFinder
+class FileFinder extends BaseFinder
   paths: null
   reloadPaths: true
   reloadAfterFirstLoad: false
 
   initialize: (@paths) ->
-    super
-
     @disposables = new CompositeDisposable
     @reloadPaths = false if @paths?.length > 0
-
     windowFocused = =>
       if @paths?
         @reloadPaths = true
@@ -24,12 +21,9 @@ class ProjectFinder extends BaseFinder
         # The window gained focused while the first task was still running
         # so let it complete but reload the paths on the next populate call.
         @reloadAfterFirstLoad = true
-
     window.addEventListener('focus', windowFocused)
     @disposables.add new Disposable -> window.removeEventListener('focus', windowFocused)
-
     @subscribeToConfig()
-
     @disposables.add atom.project.onDidChangePaths =>
       @reloadPaths = true
       @paths = null
@@ -37,22 +31,12 @@ class ProjectFinder extends BaseFinder
   subscribeToConfig: ->
     @disposables.add atom.config.onDidChange 'shadow-finder.ignoredNames', =>
       @reloadPaths = true
-
     @disposables.add atom.config.onDidChange 'core.followSymlinks', =>
       @reloadPaths = true
-
     @disposables.add atom.config.onDidChange 'core.ignoredNames', =>
       @reloadPaths = true
-
     @disposables.add atom.config.onDidChange 'core.excludeVcsIgnoredPaths', =>
       @reloadPaths = true
-
-  toggle: ->
-    if @panel?.isVisible()
-      @cancel()
-    else
-      @populate()
-      @show()
 
   getEmptyMessage: (itemCount) ->
     if itemCount is 0
@@ -61,57 +45,47 @@ class ProjectFinder extends BaseFinder
       super
 
   populate: ->
-    @setItems(@paths) if @paths?
-
+    @view.setItems(@paths) if @paths?
     if atom.project.getPaths().length is 0
-      @setItems([])
+      @view.setItems([])
       return
-
     if @reloadPaths
       @reloadPaths = false
-
       task = @runLoadPathsTask =>
         if @reloadAfterFirstLoad
           @reloadPaths = true
           @reloadAfterFirstLoad = false
         @populate()
-
       if @paths?
-        @setLoading("Reindexing project\u2026")
+        @view.setLoading("Reindexing project\u2026")
       else
-        @setLoading("Indexing project\u2026")
-        @loadingBadge.text('0')
+        @view.setLoading("Indexing project\u2026")
+        @view.loadingBadge.text('0')
         pathsFound = 0
         task.on 'load-paths:paths-found', (paths) =>
           pathsFound += paths.length
-          @loadingBadge.text(humanize.intComma(pathsFound))
+          @view.loadingBadge.text(humanize.intComma(pathsFound))
 
   projectRelativePathsForFilePaths: ->
-    projectRelativePaths = super
-
+    projectRelativePaths = @view.projectRelativePathsForFilePaths()
     if lastOpenedPath = @getLastOpenedPath()
       for {filePath}, index in projectRelativePaths
         if filePath is lastOpenedPath
           [entry] = projectRelativePaths.splice(index, 1)
           projectRelativePaths.unshift(entry)
           break
-
     projectRelativePaths
 
   getLastOpenedPath: ->
     activePath = atom.workspace.getActivePaneItem()?.getPath?()
-
     lastOpenedEditor = null
-
     for editor in atom.workspace.getTextEditors()
       filePath = editor.getPath()
       continue unless filePath
       continue if activePath is filePath
-
       lastOpenedEditor ?= editor
       if editor.lastOpened > lastOpenedEditor.lastOpened
         lastOpenedEditor = editor
-
     lastOpenedEditor?.getPath()
 
   destroy: ->

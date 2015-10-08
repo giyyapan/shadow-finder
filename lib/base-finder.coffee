@@ -1,3 +1,13 @@
 module.exports =
 class BaseFinder
-  constructor:()->
+  view:null
+
+  constructor:(@view)->
+    @initialize()
+
+  initialize:->
+
+  getEmptyMessage:->
+    "There's nothing to show"
+
+  destroy:->

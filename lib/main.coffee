@@ -19,12 +19,8 @@ module.exports =
     @active = true
 
     atom.commands.add 'atom-workspace',
-      'shadow-finder:toggle-file-finder': =>
-        @createProjectView().toggle()
-      'shadow-finder:toggle-buffer-finder': =>
-        @createBufferView().toggle()
-      'shadow-finder:toggle-git-status-finder': =>
-        @createGitStatusView().toggle()
+      'shadow-finder:toggle': =>
+        @createShadowFinderView().toggle()
 
     process.nextTick => @startLoadPathsTask()
 
@@ -35,15 +31,9 @@ module.exports =
       pane.observeActiveItem (item) -> item?.lastOpened = Date.now()
 
   deactivate: ->
-    if @projectView?
-      @projectView.destroy()
-      @projectView = null
-    if @bufferView?
-      @bufferView.destroy()
-      @bufferView = null
-    if @gitStatusView?
-      @gitStatusView.destroy()
-      @gitStatusView = null
+    if @shadowFinderView?
+      @shadowFinderView.destroy()
+      @shadowFinderView = null
     @projectPaths = null
     @stopLoadPathsTask()
     @active = false
@@ -55,26 +45,14 @@ module.exports =
       paths[path] = editor.lastOpened if path?
     paths
 
-  createProjectView: ->
+  createShadowFinderView: ->
     @stopLoadPathsTask()
 
-    unless @projectView?
-      ProjectView  = require './project-view'
-      @projectView = new ProjectView(@projectPaths)
+    unless @shadowFinderView?
+      ShadowFinderView  = require './shadow-finder-view'
+      @shadowFinderView = new ShadowFinderView(@projectPaths)
       @projectPaths = null
-    @projectView
-
-  createGitStatusView: ->
-    unless @gitStatusView?
-      GitStatusView  = require './git-status-view'
-      @gitStatusView = new GitStatusView()
-    @gitStatusView
-
-  createBufferView: ->
-    unless @bufferView?
-      BufferView = require './buffer-view'
-      @bufferView = new BufferView()
-    @bufferView
+    @shadowFinderView
 
   startLoadPathsTask: ->
     @stopLoadPathsTask()

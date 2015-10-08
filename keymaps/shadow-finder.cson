@@ -10,11 +10,8 @@
 #   'ctrl-b': 'fuzzy-finder:toggle-buffer-finder'
 #   'ctrl-B': 'fuzzy-finder:toggle-git-status-finder'
 #
-# '.platform-linux':
-#   'ctrl-t': 'fuzzy-finder:toggle-file-finder'
-#   'ctrl-p': 'fuzzy-finder:toggle-file-finder'
-#   'ctrl-b': 'fuzzy-finder:toggle-buffer-finder'
-#   'ctrl-B': 'fuzzy-finder:toggle-git-status-finder'
+'.platform-linux atom-workspace atom-text-editor':
+  'ctrl-t': 'shadow-finder:toggle'
 #
 # '.shadow-finder atom-text-editor[mini]':
 #   'shift-enter': 'fuzzy-finder:invert-confirm'
