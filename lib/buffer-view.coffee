@@ -1,8 +1,8 @@
 _ = require 'underscore-plus'
-FuzzyFinderView = require './fuzzy-finder-view'
+ShadowFinderView = require './shadow-finder-view'
 
 module.exports =
-class BufferView extends FuzzyFinderView
+class BufferView extends ShadowFinderView
   toggle: ->
     if @panel?.isVisible()
       @cancel()

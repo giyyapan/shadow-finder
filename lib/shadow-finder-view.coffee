@@ -7,7 +7,7 @@ fuzzaldrin = require 'fuzzaldrin'
 fuzzaldrinPlus = require 'fuzzaldrin-plus'
 
 module.exports =
-class FuzzyFinderView extends SelectListView
+class ShadowFinderView extends SelectListView
   filePaths: null
   projectRelativePaths: null
   subscriptions: null
@@ -16,7 +16,7 @@ class FuzzyFinderView extends SelectListView
   initialize: ->
     super
 
-    @addClass('fuzzy-finder')
+    @addClass('shadow-finder')
     @setMaxItems(10)
     @subscriptions = new CompositeDisposable
 
@@ -29,18 +29,18 @@ class FuzzyFinderView extends SelectListView
         @splitOpenPath (pane, item) -> pane.splitDown(items: [item])
       'pane:split-up': =>
         @splitOpenPath (pane, item) -> pane.splitUp(items: [item])
-      'fuzzy-finder:invert-confirm': =>
+      'shadow-finder:invert-confirm': =>
         @confirmInvertedSelection()
 
-    @alternateScoring = atom.config.get 'fuzzy-finder.useAlternateScoring'
-    @subscriptions.add atom.config.onDidChange 'fuzzy-finder.useAlternateScoring', ({newValue}) => @alternateScoring = newValue
+    @alternateScoring = atom.config.get 'shadow-finder.useAlternateScoring'
+    @subscriptions.add atom.config.onDidChange 'shadow-finder.useAlternateScoring', ({newValue}) => @alternateScoring = newValue
 
 
   getFilterKey: ->
     'projectRelativePath'
 
   cancel: ->
-    if atom.config.get('fuzzy-finder.preserveLastSearch')
+    if atom.config.get('shadow-finder.preserveLastSearch')
       lastSearch = @getFilterQuery()
       super
 
@@ -192,11 +192,11 @@ class FuzzyFinderView extends SelectListView
 
   confirmSelection: ->
     item = @getSelectedItem()
-    @confirmed(item, searchAllPanes: atom.config.get('fuzzy-finder.searchAllPanes'))
+    @confirmed(item, searchAllPanes: atom.config.get('shadow-finder.searchAllPanes'))
 
   confirmInvertedSelection: ->
     item = @getSelectedItem()
-    @confirmed(item, searchAllPanes: not atom.config.get('fuzzy-finder.searchAllPanes'))
+    @confirmed(item, searchAllPanes: not atom.config.get('shadow-finder.searchAllPanes'))
 
   confirmed: ({filePath}={}, openOptions) ->
     if atom.workspace.getActiveTextEditor() and @isQueryALineJump()

@@ -8,9 +8,9 @@ wrench = require 'wrench'
 
 PathLoader = require '../lib/path-loader'
 
-describe 'FuzzyFinder', ->
+describe 'ShadowFinder', ->
   [rootDir1, rootDir2] = []
-  [fuzzyFinder, projectView, bufferView, gitStatusView, workspaceElement, fixturesPath] = []
+  [shadowFinder, projectView, bufferView, gitStatusView, workspaceElement, fixturesPath] = []
 
   beforeEach ->
     rootDir1 = fs.realpathSync(temp.mkdirSync('root-dir1'))
@@ -38,18 +38,18 @@ describe 'FuzzyFinder', ->
       atom.workspace.open(path.join(rootDir1, 'sample.js'))
 
     waitsForPromise ->
-      atom.packages.activatePackage('fuzzy-finder').then (pack) ->
-        fuzzyFinder = pack.mainModule
-        projectView = fuzzyFinder.createProjectView()
-        bufferView = fuzzyFinder.createBufferView()
-        gitStatusView = fuzzyFinder.createGitStatusView()
+      atom.packages.activatePackage('shadow-finder').then (pack) ->
+        shadowFinder = pack.mainModule
+        projectView = shadowFinder.createProjectView()
+        bufferView = shadowFinder.createBufferView()
+        gitStatusView = shadowFinder.createGitStatusView()
 
   dispatchCommand = (command) ->
-    atom.commands.dispatch(workspaceElement, "fuzzy-finder:#{command}")
+    atom.commands.dispatch(workspaceElement, "shadow-finder:#{command}")
 
-  waitForPathsToDisplay = (fuzzyFinderView) ->
+  waitForPathsToDisplay = (shadowFinderView) ->
     waitsFor "paths to display", 5000, ->
-      fuzzyFinderView.list.children("li").length > 0
+      shadowFinderView.list.children("li").length > 0
 
   eachFilePath = (dirPaths, fn) ->
     for dirPath in dirPaths
@@ -66,7 +66,7 @@ describe 'FuzzyFinder', ->
 
     describe "toggling", ->
       describe "when the project has multiple paths", ->
-        it "shows or hides the fuzzy-finder and returns focus to the active editor if it is already showing", ->
+        it "shows or hides the shadow-finder and returns focus to the active editor if it is already showing", ->
           jasmine.attachToDOM(workspaceElement)
 
           expect(atom.workspace.panelForItem(projectView)).toBeNull()
@@ -211,8 +211,8 @@ describe 'FuzzyFinder', ->
             waitForPathsToDisplay(projectView)
             expect(projectView.list.find("li:contains(some.sock)")).not.toExist()
 
-        it "ignores paths that match entries in config.fuzzy-finder.ignoredNames", ->
-          atom.config.set("fuzzy-finder.ignoredNames", ["sample.js", "*.txt"])
+        it "ignores paths that match entries in config.shadow-finder.ignoredNames", ->
+          atom.config.set("shadow-finder.ignoredNames", ["sample.js", "*.txt"])
 
           dispatchCommand('toggle-file-finder')
 
@@ -304,7 +304,7 @@ describe 'FuzzyFinder', ->
           waitsForPromise ->
             atom.workspace.open('sample.txt')
 
-        it "shows the FuzzyFinder if it isn't showing, or hides it and returns focus to the active editor", ->
+        it "shows the ShadowFinder if it isn't showing, or hides it and returns focus to the active editor", ->
           expect(atom.workspace.panelForItem(bufferView)).toBeNull()
           atom.workspace.getActivePane().splitRight(copyActiveItem: true)
           [editor1, editor2, editor3] = atom.workspace.getTextEditors()
@@ -314,7 +314,7 @@ describe 'FuzzyFinder', ->
 
           dispatchCommand('toggle-buffer-finder')
           expect(atom.workspace.panelForItem(bufferView).isVisible()).toBe true
-          expect(workspaceElement.querySelector('.fuzzy-finder')).toHaveFocus()
+          expect(workspaceElement.querySelector('.shadow-finder')).toHaveFocus()
           bufferView.filterEditorView.getModel().insertText('this should not show up next time we toggle')
 
           dispatchCommand('toggle-buffer-finder')
@@ -361,8 +361,8 @@ describe 'FuzzyFinder', ->
             atom.workspace.open()
 
           runs ->
-            atom.packages.deactivatePackage('fuzzy-finder')
-            states = _.map atom.packages.getPackageState('fuzzy-finder'), (path, time) -> [ path, time ]
+            atom.packages.deactivatePackage('shadow-finder')
+            states = _.map atom.packages.getPackageState('shadow-finder'), (path, time) -> [ path, time ]
             expect(states.length).toBe 3
             states = _.sortBy states, (path, time) -> -time
 
@@ -431,7 +431,7 @@ describe 'FuzzyFinder', ->
             expect(editor3.getPath()).toBe expectedPath
             expect(atom.views.getView(editor3)).toHaveFocus()
 
-      describe "when the active pane does not have an item for the selected path and fuzzy-finder.searchAllPanes is false", ->
+      describe "when the active pane does not have an item for the selected path and shadow-finder.searchAllPanes is false", ->
         it "adds a new item to the active pane for the selected path", ->
           dispatchCommand('toggle-buffer-finder')
 
@@ -442,7 +442,7 @@ describe 'FuzzyFinder', ->
           expect(atom.workspace.getActiveTextEditor()).toBe editor1
 
           expectedPath = atom.project.getDirectories()[0].resolve('sample.txt')
-          bufferView.confirmed({filePath: expectedPath}, atom.config.get 'fuzzy-finder.searchAllPanes')
+          bufferView.confirmed({filePath: expectedPath}, atom.config.get 'shadow-finder.searchAllPanes')
 
           waitsFor ->
             atom.workspace.getActivePane().getItems().length is 2
@@ -459,9 +459,9 @@ describe 'FuzzyFinder', ->
             expect(editor4.getPath()).toBe expectedPath
             expect(atom.views.getView(editor4)).toHaveFocus()
 
-      describe "when the active pane does not have an item for the selected path and fuzzy-finder.searchAllPanes is true", ->
+      describe "when the active pane does not have an item for the selected path and shadow-finder.searchAllPanes is true", ->
         beforeEach ->
-          atom.config.set("fuzzy-finder.searchAllPanes", true)
+          atom.config.set("shadow-finder.searchAllPanes", true)
 
         it "switches to the pane with the item for the selected path", ->
           dispatchCommand('toggle-buffer-finder')
@@ -475,7 +475,7 @@ describe 'FuzzyFinder', ->
           originalPane = atom.workspace.getActivePane()
 
           expectedPath = atom.project.getDirectories()[0].resolve('sample.txt')
-          bufferView.confirmed({filePath: expectedPath}, searchAllPanes: atom.config.get('fuzzy-finder.searchAllPanes'))
+          bufferView.confirmed({filePath: expectedPath}, searchAllPanes: atom.config.get('shadow-finder.searchAllPanes'))
 
           waitsFor ->
             atom.workspace.getActiveTextEditor().getPath() is expectedPath
@@ -487,7 +487,7 @@ describe 'FuzzyFinder', ->
             expect(atom.workspace.getPaneItems().length).toBe 3
 
   describe "common behavior between file and buffer finder", ->
-    describe "when the fuzzy finder is cancelled", ->
+    describe "when the shadow finder is cancelled", ->
       describe "when an editor is open", ->
         it "detaches the finder and focuses the previously focused element", ->
           jasmine.attachToDOM(workspaceElement)
@@ -586,27 +586,27 @@ describe 'FuzzyFinder', ->
 
     describe "the initial load paths task started during package activation", ->
       beforeEach ->
-        fuzzyFinder.projectView.destroy()
-        fuzzyFinder.projectView = null
-        fuzzyFinder.startLoadPathsTask()
+        shadowFinder.projectView.destroy()
+        shadowFinder.projectView = null
+        shadowFinder.startLoadPathsTask()
 
         waitsFor ->
-          fuzzyFinder.projectPaths
+          shadowFinder.projectPaths
 
       it "passes the indexed paths into the project view when it is created", ->
-        {projectPaths} = fuzzyFinder
+        {projectPaths} = shadowFinder
         expect(projectPaths.length).toBe 18
-        projectView = fuzzyFinder.createProjectView()
+        projectView = shadowFinder.createProjectView()
         expect(projectView.paths).toBe projectPaths
         expect(projectView.reloadPaths).toBe false
 
       it "busts the cached paths when the project paths change", ->
         atom.project.setPaths([])
 
-        {projectPaths} = fuzzyFinder
+        {projectPaths} = shadowFinder
         expect(projectPaths).toBe null
 
-        projectView = fuzzyFinder.createProjectView()
+        projectView = shadowFinder.createProjectView()
         expect(projectView.paths).toBe null
         expect(projectView.reloadPaths).toBe true
 
@@ -844,7 +844,7 @@ describe 'FuzzyFinder', ->
       expect(projectView.filterEditorView.getText()).toBe ''
 
     it "preserves last search when the config is set", ->
-      atom.config.set("fuzzy-finder.preserveLastSearch", true)
+      atom.config.set("shadow-finder.preserveLastSearch", true)
 
       dispatchCommand('toggle-file-finder')
       expect(atom.workspace.panelForItem(projectView).isVisible()).toBe true
