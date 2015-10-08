@@ -2,11 +2,11 @@
 {Disposable, CompositeDisposable} = require 'atom'
 humanize = require 'humanize-plus'
 
-ShadowFinderView = require './shadow-finder-view'
+BaseFinder = require './base-finder'
 PathLoader = require './path-loader'
 
 module.exports =
-class ProjectView extends ShadowFinderView
+class ProjectFinder extends BaseFinder
   paths: null
   reloadPaths: true
   reloadAfterFirstLoad: false

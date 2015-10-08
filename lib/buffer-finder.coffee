@@ -1,8 +1,10 @@
+console.log "todo buffer finder"
+
 _ = require 'underscore-plus'
-ShadowFinderView = require './shadow-finder-view'
+BaseFinder = require './base-finder'
 
 module.exports =
-class BufferView extends ShadowFinderView
+class BufferFinder extends BaseFinder
   toggle: ->
     if @panel?.isVisible()
       @cancel()
