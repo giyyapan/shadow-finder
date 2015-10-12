@@ -1,3 +1,7 @@
+###
+A copy of atom/fuzzy-finder (https://github.com/atom/fuzzy-finder)
+###
+
 path = require 'path'
 {Point, CompositeDisposable} = require 'atom'
 {$, $$, SelectListView} = require 'atom-space-pen-views'
